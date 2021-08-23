@@ -2,12 +2,6 @@
 
 namespace Application
 {
-    public interface ITransactionRepository
-    {
-        Transaction GetTransaction();
-        void ClearTransaction();
-    }
-
     public class TransactionRepository : ITransactionRepository
     {
         private Transaction? _transaction;

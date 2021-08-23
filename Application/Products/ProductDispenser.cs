@@ -10,24 +10,20 @@ namespace Application
         private readonly HashSet<Product> _products;
         private readonly ICollection<string> _dispenser;
         
-        private readonly ITransactionRepository _transactionRepository;
 
         private ProductDispenser()
         {
             _dispenser = new List<string>();
         }
 
-        public ProductDispenser(HashSet<Product> products, 
-                                ITransactionRepository transactionRepository)
+        public ProductDispenser(HashSet<Product> products)
             : this()
         {
             _products = products;
-            _transactionRepository = transactionRepository;
         }
 
-        public void DispenseProduct(string sku)
+        public void DispenseProduct(Transaction transaction, string sku)
         {
-            var transaction = _transactionRepository.GetTransaction();
             var product = _products.Single(x => x.Sku.Equals(sku, StringComparison.OrdinalIgnoreCase));
 
             transaction.AddProduct(product);

@@ -5,7 +5,7 @@ namespace Application
 {
     public interface IDispenseProducts
     {
-        void DispenseProduct(string sku);
+        void DispenseProduct(Transaction transaction, string sku);
         IEnumerable<string> CheckProductHopper();
     }
 }

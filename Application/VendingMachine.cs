@@ -37,7 +37,14 @@ namespace Application
 
         public void SelectProduct(string sku)
         {
-            _productDispenser.DispenseProduct(sku);
+            var transaction = _transactionRepository.GetTransaction();
+
+            _productDispenser.DispenseProduct(transaction, sku);
+
+            if (transaction.IsComplete)
+            {
+                _coinStore.GiveChange(transaction);
+            }
         }
 
         public IEnumerable<string> CheckDispenser()

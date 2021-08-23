@@ -83,6 +83,23 @@ namespace Application.Tests.StockManager
         }
 
         [Theory]
+        [InlineData("a", "2pounds", "pound")]
+        [InlineData("b", "2pounds", "pound", "fifty")]
+        [InlineData("c", "2pounds", "pound", "twenty", "ten", "five")]
+        public void WhenProductIsPaidFor_ChangeIsDispensed(string sku, string paymentCoin, params string[] expectedChange)
+        {
+            var target = GetTarget();
+
+            target.InsertCoin(paymentCoin);
+
+            target.SelectProduct(sku);
+
+            var response = target.CheckCoinReturn();
+
+            Assert.Equal(expectedChange, response);
+        }
+
+        [Theory]
         [InlineData(1.00, "a", "fifty", "twenty", "twenty", "five", "two", "two")]
         [InlineData(0.50, "b", "twenty", "twenty", "five", "two", "two")]
         [InlineData(0.65, "c", "fifty", "ten", "two", "two")]

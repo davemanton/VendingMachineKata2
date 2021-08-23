@@ -13,6 +13,7 @@ namespace Application.Infrastructure
                .AddScoped<IDetectCoins, CoinDetector>()
                .AddScoped<ICoinHandler, CoinHandler>()
                .AddScoped<ITransactionRepository, TransactionRepository>()
+               .AddScoped<ICalculateChange, ChangeCalculator>()
                 ;
 
             services
@@ -25,9 +26,7 @@ namespace Application.Infrastructure
                         new ("c", "candy", 0.65m),
                     };
                     
-                    return new ProductDispenser(products, 
-                                                factory.GetRequiredService<ITransactionRepository>()
-                                                );
+                    return new ProductDispenser(products);
                 });
 
             return services;

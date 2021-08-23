@@ -17,10 +17,12 @@ namespace Domain
 
         public decimal InsertedCoinsTotal => _coins.Sum(x => x.Value);
         public decimal TotalCost => _products.Sum(x => x.Price);
+        public decimal ChangeRequired => InsertedCoinsTotal - TotalCost;
+
         public bool IsSufficientPayment => InsertedCoinsTotal >= TotalCost;
         public bool IsCompleteAttempted { get; private set; }
         public bool IsComplete { get; private set; }
-
+        
         public IReadOnlyCollection<Coin> Coins => _coins;
         public IReadOnlyCollection<Product> Products => _products;
 
@@ -29,15 +31,15 @@ namespace Domain
 
         public string GetNotification()
         {
-            if (IsPriceNotificationRequired)
+            if (_isPriceNotificationRequired)
             {
-                IsPriceNotificationRequired = false;
+                _isPriceNotificationRequired = false;
                 return PriceNotification;
             }
 
-            if (IsCompleteNotificationRequired)
+            if (_isCompleteNotificationRequired)
             {
-                IsCompleteNotificationRequired = false;
+                _isCompleteNotificationRequired = false;
                 return CompleteNotification;
             }
 
@@ -54,22 +56,22 @@ namespace Domain
 
             if (IsSufficientPayment)
             {
-                IsCompleteNotificationRequired = true;
+                _isCompleteNotificationRequired = true;
                 IsComplete = true;
             }
             else
             {
-                IsPriceNotificationRequired = true;
+                _isPriceNotificationRequired = true;
                 IsComplete = false;
             }
 
             return IsComplete;
         }
 
-        private bool IsPriceNotificationRequired { get; set; }
+        private bool _isPriceNotificationRequired;
         private string PriceNotification => $"PRICE {TotalCost:C}";
 
-        private bool IsCompleteNotificationRequired { get; set; }
+        private bool _isCompleteNotificationRequired;
         private string CompleteNotification => "THANK YOU";
     }
 }
