@@ -4,27 +4,30 @@ namespace Application
 {
     public class VendingMachine : IVendingMachine
     {
-        private readonly IStoreCoins _coinStore;
-        private readonly IDisplayMessages _machineDisplay;
+        private readonly ICoinHandler _coinStore;
         private readonly IDispenseProducts _productDispenser;
+        private readonly ITransactionRepository _transactionRepository;
 
-        public VendingMachine(IStoreCoins coinStore, 
-                              IDisplayMessages machineDisplay, 
-                              IDispenseProducts productDispenser)
+        public VendingMachine(ICoinHandler coinStore, IDispenseProducts productDispenser, ITransactionRepository transactionRepository)
         {
             _coinStore = coinStore;
-            _machineDisplay = machineDisplay;
             _productDispenser = productDispenser;
+            _transactionRepository = transactionRepository;
         }
 
         public string CheckDisplay()
         {
-            return _machineDisplay.CheckDisplay();
+            var transaction = _transactionRepository.GetTransaction();
+
+            if (transaction.IsComplete)
+                _transactionRepository.ClearTransaction();
+
+            return transaction.GetNotification();
         }
 
         public void InsertCoin(string pieceOfMetal)
         {
-            _coinStore.AddCoin(pieceOfMetal);
+            _coinStore.InsertCoin(pieceOfMetal);
         }
 
         public IEnumerable<string> CheckCoinReturn()

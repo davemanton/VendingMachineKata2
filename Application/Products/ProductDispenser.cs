@@ -7,45 +7,39 @@ namespace Application
 {
     public class ProductDispenser : IDispenseProducts
     {
-        private readonly HashSet<ProductStatus> _products;
+        private readonly HashSet<Product> _products;
         private readonly ICollection<string> _dispenser;
+        
+        private readonly ITransactionRepository _transactionRepository;
 
-        private readonly IDisplayMessages _messageDisplay;
-        private readonly IStoreCoins _coinStore;
-
-        private ProductDispenser(IStoreCoins coinStore)
+        private ProductDispenser()
         {
-            _coinStore = coinStore;
             _dispenser = new List<string>();
         }
 
-        public ProductDispenser(HashSet<ProductStatus> products, 
-                                IDisplayMessages messageDisplay,
-                                IStoreCoins coinStore)
-            : this(coinStore)
+        public ProductDispenser(HashSet<Product> products, 
+                                ITransactionRepository transactionRepository)
+            : this()
         {
             _products = products;
-            _messageDisplay = messageDisplay;
+            _transactionRepository = transactionRepository;
         }
 
         public void DispenseProduct(string sku)
         {
+            var transaction = _transactionRepository.GetTransaction();
             var product = _products.Single(x => x.Sku.Equals(sku, StringComparison.OrdinalIgnoreCase));
 
-            if (_coinStore.GetTotal() < product.Cost)
+            transaction.AddProduct(product);
+
+            if (transaction.TryComplete())
             {
-                _coinStore.SetExpectingCoins(true);
-                _messageDisplay.OverrideDisplay($"PRICE {product.Cost:C}");
-                
-                return;
+                foreach(var purchasedProduct in transaction.Products)
+                    _dispenser.Add(purchasedProduct.Name);
             }
-
-            _dispenser.Add(product.Product);
-            _coinStore.Empty();
-
-            _messageDisplay.OverrideDisplay("THANK YOU");
         }
 
-        public IEnumerable<string> CheckProductHopper() { return _dispenser; }
+        public IEnumerable<string> CheckProductHopper()
+            => _dispenser;
     }
 }

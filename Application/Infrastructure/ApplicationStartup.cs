@@ -11,23 +11,23 @@ namespace Application.Infrastructure
             services
                .AddScoped<IVendingMachine, VendingMachine>()
                .AddScoped<IDetectCoins, CoinDetector>()
-               .AddScoped<IStoreCoins, CoinStore>()
-               .AddScoped<IDisplayMessages, MachineDisplay>()
+               .AddScoped<ICoinHandler, CoinHandler>()
+               .AddScoped<ITransactionRepository, TransactionRepository>()
                 ;
 
             services
                .AddScoped<IDispenseProducts, ProductDispenser>(factory =>
                 {
-                    var productStatus = new HashSet<ProductStatus>
+                    var products = new HashSet<Product>
                     {
                         new ("a", "cola", 1.00m),
                         new ("b", "chips", 0.50m),
                         new ("c", "candy", 0.65m),
                     };
                     
-                    return new ProductDispenser(productStatus, 
-                                                factory.GetRequiredService<IDisplayMessages>(),
-                                                factory.GetRequiredService<IStoreCoins>());
+                    return new ProductDispenser(products, 
+                                                factory.GetRequiredService<ITransactionRepository>()
+                                                );
                 });
 
             return services;
