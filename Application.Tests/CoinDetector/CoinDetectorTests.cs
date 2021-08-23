@@ -20,6 +20,7 @@ namespace Application.Tests
 
         [Theory]
         [InlineData("penny", 0.01)]
+        [InlineData("two", 0.02)]
         [InlineData("five", 0.05)]
         [InlineData("ten", 0.10)]
         [InlineData("twenty", 0.20)]

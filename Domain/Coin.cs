@@ -2,6 +2,30 @@
 
 namespace Domain
 {
+    public class ProductStatus
+    {
+        public ProductStatus(string sku, string product, decimal cost)
+        {
+            Sku = sku;
+            Product = product;
+            Cost = cost;
+        }
+
+        public string Sku { get; private init; }
+        public string Product { get; private init; }
+        public decimal Cost { get; private init; }
+    }
+
+    public class Product
+    {
+        public Product(string name)
+        {
+            Name = name;
+        }
+
+        public string Name { get; private init; }
+    }
+
     public class Coin
     {
         private Coin(decimal value)
@@ -16,6 +40,7 @@ namespace Domain
             return coinType switch
             {
                 CoinType.Penny => new Coin(0.01m),
+                CoinType.TwoPence => new Coin(0.02m),
                 CoinType.FivePence => new Coin(0.05m),
                 CoinType.TenPence => new Coin(0.10m),
                 CoinType.TwentyPence => new Coin(0.20m),
@@ -30,6 +55,7 @@ namespace Domain
     public enum CoinType
     {
         Penny,
+        TwoPence,
         FivePence,
         TenPence,
         TwentyPence,

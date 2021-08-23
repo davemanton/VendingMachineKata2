@@ -6,6 +6,8 @@ namespace Application
     {
         string CheckDisplay();
         void InsertCoin(string pieceOfMetal);
+        void SelectProduct(string sku);
         IEnumerable<string> CheckCoinReturn();
+        IEnumerable<string> CheckDispenser();
     }
 }

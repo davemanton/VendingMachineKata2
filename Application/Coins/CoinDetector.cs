@@ -1,4 +1,5 @@
-﻿using Domain;
+﻿using System.Collections;
+using Domain;
 
 namespace Application
 {
@@ -16,6 +17,7 @@ namespace Application
         private static CoinType? GetCoinType(string pieceOfMetal) => pieceOfMetal.ToLowerInvariant() switch
         {
             "penny" => CoinType.Penny,
+            "two" => CoinType.TwoPence,
             "five" => CoinType.FivePence,
             "ten" => CoinType.TenPence,
             "twenty" => CoinType.TwentyPence,
