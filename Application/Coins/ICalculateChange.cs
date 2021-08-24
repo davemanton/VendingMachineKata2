@@ -5,6 +5,6 @@ namespace Application
 {
     public interface ICalculateChange
     {
-        IEnumerable<Coin> Calculate(decimal value);
+        bool TryCalculate(ICollection<CoinStatus> availableCoins, decimal changeRequired, out ICollection<Coin> change);
     }
 }

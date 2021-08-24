@@ -1,10 +1,6 @@
-﻿using System;
+﻿using Domain;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Xml;
-using Domain;
 
 namespace Application
 {
@@ -15,15 +11,18 @@ namespace Application
         private readonly ICalculateChange _calculateChange;
 
         private readonly ICollection<string> _coinReturn;
+        private readonly ICollection<CoinStatus> _availableCoins;
 
         public CoinHandler(IDetectCoins coinDetector, 
                            ITransactionRepository transactionRepository,
-                           ICalculateChange calculateChange)
+                           ICalculateChange calculateChange,
+                           ICollection<CoinStatus> availableCoins)
         {
             _coinReturn = new List<string>();
             _coinDetector = coinDetector;
             _transactionRepository = transactionRepository;
             _calculateChange = calculateChange;
+            _availableCoins = availableCoins;
         }
 
         public void InsertCoin(string pieceOfMetal)
@@ -34,6 +33,8 @@ namespace Application
             {
                 var transaction = _transactionRepository.GetTransaction();
                 transaction.AddCoin(coin);
+
+                _availableCoins.Single(x => x.CoinType == coin.CoinType).AddCoin(coin);
             }
             else
                 _coinReturn.Add(pieceOfMetal);
@@ -41,7 +42,7 @@ namespace Application
 
         public void GiveChange(Transaction transaction)
         {
-            var change = _calculateChange.Calculate(transaction.ChangeRequired);
+            _calculateChange.TryCalculate(_availableCoins, transaction.ChangeRequired, out var change);
             
             foreach(var coin in change)
                 _coinReturn.Add(coin.Name);

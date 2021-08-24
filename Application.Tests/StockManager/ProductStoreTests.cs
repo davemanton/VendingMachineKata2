@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Domain;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -6,15 +9,29 @@ namespace Application.Tests.StockManager
 {
     public class ProductDispenserTests
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly ICollection<CoinStatus> _storedCoins;
+        
+        private IServiceProvider _serviceProvider;
 
         public ProductDispenserTests()
         {
-            _serviceProvider = TestDependencyResolver.Resolve();
+            _storedCoins = new HashSet<CoinStatus>()
+            {
+                new(CoinType.Penny, 5),
+                new(CoinType.TwoPence, 5),
+                new(CoinType.FivePence, 5),
+                new(CoinType.TenPence, 5),
+                new(CoinType.TwentyPence, 5),
+                new(CoinType.FiftyPence, 5),
+                new(CoinType.OnePound, 5),
+                new(CoinType.TwoPounds, 5),
+            };
         }
 
         public IVendingMachine GetTarget()
         {
+            _serviceProvider = TestDependencyResolver.Resolve(_storedCoins);
+
             return _serviceProvider.GetRequiredService<IVendingMachine>();
         }
 
@@ -88,6 +105,31 @@ namespace Application.Tests.StockManager
         [InlineData("c", "2pounds", "pound", "twenty", "ten", "five")]
         public void WhenProductIsPaidFor_ChangeIsDispensed(string sku, string paymentCoin, params string[] expectedChange)
         {
+            var target = GetTarget();
+
+            target.InsertCoin(paymentCoin);
+
+            target.SelectProduct(sku);
+
+            var response = target.CheckCoinReturn();
+
+            Assert.Equal(expectedChange, response);
+        }
+
+        [Theory]
+        [InlineData("a", "2pounds", "twenty", "twenty", "twenty", "twenty", "twenty")]
+        [InlineData("b", "2pounds", "twenty", "twenty", "twenty", "twenty", "twenty", "ten", "ten", "ten", "ten", "ten")]
+        [InlineData("c", "2pounds", "twenty", "twenty", "twenty", "twenty", "twenty", "ten", "ten", "ten", "five")]
+        public void WhenProductIsPaidFor_AndNoPoundsOrFiftiesAvailable_ChangeIsDispensed(string sku, string paymentCoin, params string[] expectedChange)
+        {
+            var poundStatus = _storedCoins.Single(x => x.CoinType == CoinType.OnePound);
+            _storedCoins.Remove(poundStatus);
+            _storedCoins.Add(new CoinStatus(CoinType.OnePound, 0));
+
+            var fiftyStatus = _storedCoins.Single(x => x.CoinType == CoinType.FiftyPence);
+            _storedCoins.Remove(fiftyStatus);
+            _storedCoins.Add(new CoinStatus(CoinType.FiftyPence, 0));
+
             var target = GetTarget();
 
             target.InsertCoin(paymentCoin);

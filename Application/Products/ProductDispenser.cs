@@ -7,18 +7,12 @@ namespace Application
 {
     public class ProductDispenser : IDispenseProducts
     {
-        private readonly HashSet<Product> _products;
-        private readonly ICollection<string> _dispenser;
-        
+        private readonly ICollection<Product> _products;
+        private readonly List<string> _dispenser;
 
-        private ProductDispenser()
+        public ProductDispenser(ICollection<Product> products)
         {
             _dispenser = new List<string>();
-        }
-
-        public ProductDispenser(HashSet<Product> products)
-            : this()
-        {
             _products = products;
         }
 

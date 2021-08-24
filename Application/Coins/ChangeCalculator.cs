@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks.Sources;
 using Domain;
 
 namespace Application
@@ -17,6 +18,33 @@ namespace Application
             { 0.02m, CoinType.TwoPence },
             { 0.01m, CoinType.Penny },
         };
+
+        public bool TryCalculate(ICollection<CoinStatus> availableCoins, decimal changeRequired, out ICollection<Coin> change)
+        {
+            change = new HashSet<Coin>();
+            
+            Coin? nextCoin;
+            var remainingChangeRequired = changeRequired;
+            
+            do
+            {
+                nextCoin = GetLargestAvailableCoin(availableCoins, remainingChangeRequired);
+
+                if (nextCoin == null)
+                    continue;
+
+                change.Add(nextCoin);
+                remainingChangeRequired -= nextCoin.Value;
+
+            } while (remainingChangeRequired > 0 || nextCoin != null);
+
+            var isSuccess = change.Sum(x => x.Value) == changeRequired;
+
+            if(!isSuccess)
+                ReturnCoins(change, availableCoins);
+
+            return isSuccess;
+        }
 
         public IEnumerable<Coin> Calculate(decimal value)
         {
@@ -39,6 +67,25 @@ namespace Application
                   .Where(x => x.difference >= 0)
                   .OrderBy(x => x.difference)
                   .First().Value;
-        }   
+        }
+
+        private Coin? GetLargestAvailableCoin(ICollection<CoinStatus> availableCoins, decimal value)
+        {
+            var bestMatch = availableCoins.Where(x => x.IsAvailable)
+                                          .Select(coinStatus => new { coinStatus, difference = value - coinStatus.Coins.First().Value })
+                                          .Where(x => x.difference >= 0)
+                                          .OrderBy(x => x.difference)
+                                          .FirstOrDefault()?.coinStatus;
+
+            return bestMatch?.GetCoin();
+        }
+
+        private void ReturnCoins(IEnumerable<Coin> coinsToReturn, ICollection<CoinStatus> coinStore)
+        {
+            foreach (var coin in coinsToReturn)
+            {
+                coinStore.Single(x => x.CoinType == coin.CoinType).AddCoin(coin);
+            }
+        }
     }
 }
