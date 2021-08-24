@@ -27,7 +27,17 @@ namespace Application
 
         public void InsertCoin(string pieceOfMetal)
         {
-            _coinStore.InsertCoin(pieceOfMetal);
+            var transaction = _transactionRepository.GetTransaction();
+
+            _coinStore.InsertCoin(transaction, pieceOfMetal);
+        }
+
+        public void CancelTransaction()
+        {
+            var transaction = _transactionRepository.GetTransaction(); 
+            _productDispenser.CancelTransaction(transaction);
+            _coinStore.CancelTransaction(transaction);
+            _transactionRepository.ClearTransaction();
         }
 
         public IEnumerable<string> CheckCoinReturn()

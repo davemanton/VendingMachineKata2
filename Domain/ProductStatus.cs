@@ -30,5 +30,10 @@ namespace Domain
 
             return product;
         }
+
+        public void AddProduct(Product product)
+        {
+            _products.Add(product);
+        }
     }
 }

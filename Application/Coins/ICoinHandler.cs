@@ -5,7 +5,8 @@ namespace Application
 {
     public interface ICoinHandler
     {
-        void InsertCoin(string pieceOfMetal);
+        void InsertCoin(Transaction transaction, string pieceOfMetal);
+        void CancelTransaction(Transaction transaction);
         void GiveChange(Transaction transaction);
         IEnumerable<string> CheckCoinReturn();
     }

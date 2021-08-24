@@ -7,7 +7,6 @@ namespace Application
 {
     public class ProductDispenser : IDispenseProducts
     {
-        
         private readonly ICollection<ProductStatus> _products;
         private readonly List<string> _dispenser;
 
@@ -25,6 +24,15 @@ namespace Application
             {
                 foreach(var purchasedProduct in transaction.Products)
                     _dispenser.Add(purchasedProduct.Name);
+            }
+        }
+
+        public void CancelTransaction(Transaction transaction)
+        {
+            foreach (var product in transaction.Products)
+            {
+                var productStatus = _products.Single(x => x.Sku.Equals(product.Sku, StringComparison.OrdinalIgnoreCase));
+                productStatus.AddProduct(product);
             }
         }
 
