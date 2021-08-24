@@ -15,20 +15,8 @@ namespace Application.Infrastructure
                .AddScoped<ICoinHandler, CoinHandler>()
                .AddScoped<ITransactionRepository, TransactionRepository>()
                .AddScoped<ICalculateChange, ChangeCalculator>()
+               .AddScoped<IDispenseProducts, ProductDispenser>()
                 ;
-
-            services
-               .AddScoped<IDispenseProducts, ProductDispenser>(factory =>
-                {
-                    var products = new HashSet<Product>
-                    {
-                        new ("a", "cola", 1.00m),
-                        new ("b", "chips", 0.50m),
-                        new ("c", "candy", 0.65m),
-                    };
-                    
-                    return new ProductDispenser(products);
-                });
 
             return services;
         }
@@ -39,11 +27,11 @@ namespace Application.Infrastructure
         public static IServiceCollection Resolve(IServiceCollection services)
         {
             // For base product dispenser data
-            services.AddScoped<ICollection<Product>>(factory => new HashSet<Product>
+            services.AddScoped<ICollection<ProductStatus>>(factory => new HashSet<ProductStatus>
             {
-                new("a", "cola", 1.00m),
-                new("b", "chips", 0.50m),
-                new("c", "candy", 0.65m),
+                new("a", 1.00m, 3),
+                new("b", 0.50m, 3),
+                new("c", 0.65m, 3),
             });
 
             // For base coin collection data

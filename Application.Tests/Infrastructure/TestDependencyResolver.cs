@@ -8,22 +8,23 @@ namespace Application.Tests
 {
     public static class TestDependencyResolver
     {
-        public static IServiceProvider Resolve(ICollection<CoinStatus>? overrideStatus = null)
+        public static IServiceProvider Resolve(ICollection<ProductStatus>? overrideProductStatus = null, ICollection<CoinStatus>? overrideCoinStatus = null)
         {
             var services = new ServiceCollection();
 
             ApplicationStartup.Resolve(services);
 
-            services.AddScoped<ICollection<Product>>(factory => new HashSet<Product>
+            services.AddScoped<ICollection<ProductStatus>>(factory 
+                => overrideProductStatus ?? new HashSet<ProductStatus>
             {
-                new("a", "cola", 1.00m),
-                new("b", "chips", 0.50m),
-                new("c", "candy", 0.65m),
+                new("a", 1.00m, 3),
+                new("b", 0.50m, 3),
+                new("c", 0.65m, 3),
             });
 
         
             services.AddScoped<ICollection<CoinStatus>>(factory 
-                => overrideStatus ?? new HashSet<CoinStatus>()
+                => overrideCoinStatus ?? new HashSet<CoinStatus>()
             {
                 new(CoinType.Penny, 5),
                 new(CoinType.TwoPence, 5),

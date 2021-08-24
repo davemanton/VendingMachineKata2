@@ -7,10 +7,11 @@ namespace Application
 {
     public class ProductDispenser : IDispenseProducts
     {
-        private readonly ICollection<Product> _products;
+        
+        private readonly ICollection<ProductStatus> _products;
         private readonly List<string> _dispenser;
 
-        public ProductDispenser(ICollection<Product> products)
+        public ProductDispenser(ICollection<ProductStatus> products)
         {
             _dispenser = new List<string>();
             _products = products;
@@ -18,11 +19,9 @@ namespace Application
 
         public void DispenseProduct(Transaction transaction, string sku)
         {
-            var product = _products.Single(x => x.Sku.Equals(sku, StringComparison.OrdinalIgnoreCase));
+            var productStatus = _products.Single(x => x.Sku.Equals(sku, StringComparison.OrdinalIgnoreCase));
 
-            transaction.AddProduct(product);
-
-            if (transaction.TryComplete())
+            if(transaction.TryAddProduct(productStatus) && transaction.TryComplete())
             {
                 foreach(var purchasedProduct in transaction.Products)
                     _dispenser.Add(purchasedProduct.Name);

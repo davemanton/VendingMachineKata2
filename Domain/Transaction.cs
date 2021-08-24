@@ -7,16 +7,17 @@ namespace Domain
     {
         private readonly List<Coin> _coins;
         private readonly List<Product> _products;
-        
+        private string? _notification;
 
         public Transaction()
         {
             _coins = new List<Coin>();
             _products = new List<Product>();
+            TotalCost = 0m;
         }
 
         public decimal InsertedCoinsTotal => _coins.Sum(x => x.Value);
-        public decimal TotalCost => _products.Sum(x => x.Price);
+        public decimal TotalCost { get; private set; }
         public decimal ChangeRequired => InsertedCoinsTotal - TotalCost;
 
         public bool IsSufficientPayment => InsertedCoinsTotal >= TotalCost;
@@ -27,27 +28,37 @@ namespace Domain
         public IReadOnlyCollection<Product> Products => _products;
 
         public void AddCoin(Coin coin) => _coins.Add(coin);
-        public void AddProduct(Product product) => _products.Add(product);
+
+        public bool TryAddProduct(ProductStatus productStatus)
+        {
+            if (productStatus.IsAvailable)
+            {
+                _products.Add(productStatus.GetProduct());
+                TotalCost += productStatus.Price;
+
+                return true;
+            }
+
+            _notification = "SOLD OUT";
+            return false;
+        }
 
         public string GetNotification()
         {
-            if (_isPriceNotificationRequired)
+            var notification = _notification;
+            _notification = null;
+
+            if (notification == null)
             {
-                _isPriceNotificationRequired = false;
-                return PriceNotification;
+                if ((IsCompleteAttempted && !IsComplete) || InsertedCoinsTotal == 0)
+                    notification = "INSERT COINS";
+                else
+                {
+                    notification = $"{InsertedCoinsTotal:C}";
+                }
             }
 
-            if (_isCompleteNotificationRequired)
-            {
-                _isCompleteNotificationRequired = false;
-                return CompleteNotification;
-            }
-
-            return IsCompleteAttempted && !IsComplete
-                       ? "INSERT COINS"
-                       : InsertedCoinsTotal > 0
-                           ? $"{InsertedCoinsTotal:C}"
-                           : "INSERT COINS";
+            return notification;
         }
 
         public bool TryComplete()
@@ -56,22 +67,16 @@ namespace Domain
 
             if (IsSufficientPayment)
             {
-                _isCompleteNotificationRequired = true;
+                _notification = "THANK YOU";
                 IsComplete = true;
             }
             else
             {
-                _isPriceNotificationRequired = true;
+                _notification = $"PRICE {TotalCost:C}";
                 IsComplete = false;
             }
 
             return IsComplete;
         }
-
-        private bool _isPriceNotificationRequired;
-        private string PriceNotification => $"PRICE {TotalCost:C}";
-
-        private bool _isCompleteNotificationRequired;
-        private string CompleteNotification => "THANK YOU";
     }
 }

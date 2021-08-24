@@ -10,7 +10,8 @@ namespace Application.Tests.StockManager
     public class ProductDispenserTests
     {
         private readonly ICollection<CoinStatus> _storedCoins;
-        
+        private readonly ICollection<ProductStatus> _productStatus;
+
         private IServiceProvider _serviceProvider;
 
         public ProductDispenserTests()
@@ -26,11 +27,18 @@ namespace Application.Tests.StockManager
                 new(CoinType.OnePound, 5),
                 new(CoinType.TwoPounds, 5),
             };
+
+            _productStatus = new HashSet<ProductStatus>()
+            {
+                new("a", 1.00m, 3),
+                new("b", 0.50m, 3),
+                new("c", 0.65m, 3),
+            };
         }
 
         public IVendingMachine GetTarget()
         {
-            _serviceProvider = TestDependencyResolver.Resolve(_storedCoins);
+            _serviceProvider = TestDependencyResolver.Resolve(_productStatus, _storedCoins);
 
             return _serviceProvider.GetRequiredService<IVendingMachine>();
         }
@@ -176,6 +184,28 @@ namespace Application.Tests.StockManager
             var response = target.CheckDisplay();
 
             Assert.Equal($"INSERT COINS", response);
+        }
+
+        [Theory]
+        [InlineData("a")]
+        [InlineData("b")]
+        [InlineData("c")]
+        public void WhenProductIsSelected_IfOutOfStock_DisplaysSoldOut(string sku)
+        {
+            var productStatus = _productStatus.Single(x => x.Sku == sku);
+            _productStatus.Remove(productStatus);
+            var noStockStatus = new ProductStatus(sku, productStatus.Price, 0);
+            _productStatus.Add(noStockStatus);
+
+            var target = GetTarget();
+
+            target.InsertCoin("2pounds");
+
+            target.SelectProduct(sku);
+
+            var response = target.CheckDisplay();
+
+            Assert.Equal("SOLD OUT", response);
         }
     }
 }
